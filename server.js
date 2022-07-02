@@ -30,17 +30,20 @@ async function run(){
     const UsersCollections = client.db("tronix").collection("users");
 
     // get all user
-    app.get('/users', async(req, res)=>{
-      res.send("ALL USERS")
-    })
-    //update a users just one user specific by email..
+    // app.get('/users', async(req, res)=>{
+    //   res.send("ALL USERS")
+    // })
+
+
+    //update a user just one user specific by email..
+    // save registered user in db
     app.put('/user/:email', async(req, res)=>{
       const email = req.params.email;
       const filter = {email: email};
       const user = req.body;
       const options = { upsert: true };
       const updateDoc = {
-        $set: user
+        $set: user,
       };
       const result = await UsersCollections.updateOne(filter, updateDoc, options);
       console.log(email, 'email')
