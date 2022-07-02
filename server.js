@@ -18,12 +18,34 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+
+
+
+
 async function run(){
   try{
     await client.connect();
     const BlogCollections = client.db("tronix").collection("blogs");
     const ProductCollections = client.db("tronix").collection("products");
+    const UsersCollections = client.db("tronix").collection("users");
 
+    // get all user
+    app.get('/users', async(req, res)=>{
+      res.send("ALL USERS")
+    })
+    //update a users just one user specific by email..
+    app.put('/user/:email', async(req, res)=>{
+      const email = req.params.email;
+      const filter = {email: email};
+      const user = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user
+      };
+      const result = await UsersCollections.updateOne(filter, updateDoc, options);
+      console.log(email, 'email')
+      res.send(result)
+    })
 
     // load all blogs
     app.get('/blogs', async (req, res)=>{
@@ -66,3 +88,4 @@ app.get('/', (req, res)=>{
 app.listen(port, ()=>{
 console.log("Server is running on ${port}");
 })
+
