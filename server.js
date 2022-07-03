@@ -20,6 +20,15 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+
+// verifyJWT .. here we are trying to read authHeader, for verification
+function verifyJWT (req, res, next){
+  const authHeader = req.headers.authorization;
+  console.log('auth header', authHeader)
+}
+
+
+
 async function run() {
   try {
     await client.connect();
@@ -28,7 +37,7 @@ async function run() {
     const UsersCollections = client.db("tronix").collection("users");
 
     // get all user
-    app.get("/user", async (req, res) => {
+    app.get("/user",  async (req, res) => {
       const users = await UsersCollections.find().toArray();
       res.send(users);
     });
