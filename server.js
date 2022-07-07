@@ -20,14 +20,23 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-
 // verifyJWT .. here we are trying to read authHeader, for verification
-function verifyJWT (req, res, next){
+function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
-  console.log('auth header', authHeader)
+  // console.log("auth header", authHeader);
+  if (!authHeader) {
+    return res.status(401).send({ message: "UnAuthorization Access" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
 }
-
-
 
 async function run() {
   try {
@@ -37,7 +46,7 @@ async function run() {
     const UsersCollections = client.db("tronix").collection("users");
 
     // get all user
-    app.get("/user",  async (req, res) => {
+    app.get("/user", verifyJWT, async (req, res) => {
       const users = await UsersCollections.find().toArray();
       res.send(users);
     });
@@ -58,10 +67,45 @@ async function run() {
         options
       );
       // giving every user a token..
-      const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_TOKEN, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: "3h",
+        }
+      );
       res.send({ result, accessToken: token });
+    });
+
+
+    // check ADMIN
+    app.get('/admin/:email', async(req, res) =>{
+      const email = req.params.email;
+      const user = await UsersCollections.findOne({email: email});
+      const isAdmin = user.role === 'admin';
+      res.send({admin: isAdmin})
+    })
+
+    // make a user an Admin with the same(ABOVE) user field by filtering role = 'admin'.it'll giving power to make any of user an admin..
+    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const requester = req.decoded.email;
+      console.log(email, requester)
+      const requesterAccount = await UsersCollections.findOne({
+        email: requester,
+      });
+      console.log(requesterAccount, 'account')
+      if (requesterAccount.role == "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $set: { role: "admin" },
+        };
+        const result = await UsersCollections.updateOne(filter, updateDoc);
+        res.send(result);
+      }
+      else{
+        res.status(403).send({message: 'forbidden'});
+      }
     });
 
     // load all blogs
