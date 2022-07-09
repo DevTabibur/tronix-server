@@ -71,7 +71,7 @@ async function run() {
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
         {
-          expiresIn: "3h",
+          expiresIn: "1h",
         }
       );
       res.send({ result, accessToken: token });
@@ -90,11 +90,11 @@ async function run() {
     app.put("/user/admin/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       const requester = req.decoded.email;
-      console.log(email, requester)
+      // console.log(email, requester)
       const requesterAccount = await UsersCollections.findOne({
         email: requester,
       });
-      console.log(requesterAccount, 'account')
+      // console.log(requesterAccount, 'account')
       if (requesterAccount.role == "admin") {
         const filter = { email: email };
         const updateDoc = {
@@ -126,13 +126,23 @@ async function run() {
     });
 
     // load all products
-    app.get("/products", async (req, res) => {
+    app.get("/product", async (req, res) => {
       // console.log(req.body);
       const query = {};
       const cursor = ProductCollections.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
+      const products = await cursor.toArray();
+      res.send(products);
     });
+
+    // for count of pagination...total product counting process
+    app.get('/productCount', async (req, res)=>{
+      const query={};
+      const cursor = ProductCollections.find(query);
+      const count = await cursor.count();
+      res.send({count});
+    })
+
+
   } finally {
     //   await client.close();
   }
