@@ -44,7 +44,13 @@ async function run() {
     const BlogCollections = client.db("tronix").collection("blogs");
     const ProductCollections = client.db("tronix").collection("products");
     const UsersCollections = client.db("tronix").collection("users");
+    const StyleCollections = client.db("tronix").collection("style");
 
+    // get load all styles
+    app.get("/styles", async(req, res)=>{
+      const styles = await StyleCollections.find().toArray();
+      res.send(styles)
+    })
     // get all user
     app.get("/user", verifyJWT, async (req, res) => {
       const users = await UsersCollections.find().toArray();
@@ -126,7 +132,7 @@ async function run() {
     });
 
     // load all products
-    app.get("/product", async (req, res) => {
+    app.get("/products", async (req, res) => {
       // console.log(req.body);
       const query = {};
       const cursor = ProductCollections.find(query);
