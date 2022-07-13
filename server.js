@@ -139,14 +139,21 @@ async function run() {
       const products = await cursor.toArray();
       res.send(products);
     });
+    // load just one products by name
+    app.get("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: ObjectId(id)};
+      const result = await ProductCollections.findOne(query);
+      res.send(result);
+    });
 
     // for count of pagination...total product counting process
-    app.get('/productCount', async (req, res)=>{
-      const query={};
-      const cursor = ProductCollections.find(query);
-      const count = await cursor.count();
-      res.send({count});
-    })
+    // app.get('/productCount', async (req, res)=>{
+    //   const query={};
+    //   const cursor = ProductCollections.find(query);
+    //   const count = await cursor.estimatedDocumentCount();
+    //   res.send({count});
+    // })
 
 
   } finally {
