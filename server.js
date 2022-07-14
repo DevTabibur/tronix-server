@@ -148,12 +148,12 @@ async function run() {
     });
 
     // for count of pagination...total product counting process
-    // app.get('/productCount', async (req, res)=>{
-    //   const query={};
-    //   const cursor = ProductCollections.find(query);
-    //   const count = await cursor.estimatedDocumentCount();
-    //   res.send({count});
-    // })
+    app.get('/productCount', async (req, res)=>{
+      const query={};
+      const cursor = ProductCollections.find(query);
+      const count = await cursor.count();
+      res.send({count});
+    })
 
 
   } finally {
